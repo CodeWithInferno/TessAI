@@ -1,4 +1,4 @@
 from langchain_ollama import OllamaLLM, OllamaEmbeddings
 
-llm = OllamaLLM(model="deepseek-coder:6.7b")
-embedding = OllamaEmbeddings(model="deepseek-coder:6.7b")
+llm = OllamaLLM(model="llama3.2")
+embedding = OllamaEmbeddings(model="llama3.2")

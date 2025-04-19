@@ -59,6 +59,8 @@ from .automation.locator import guess_search_locations
 from .automation.query_parser import extract_folder_name
 from .automation.terminal import run_in_shared_terminal
 from .automation.file_resolver import resolve_file_path
+from .automation.executor import run_with_retry_and_reflection
+
 
 
 
@@ -67,7 +69,9 @@ class TessCore:
         print("🧠 Skipping system tests. Starting immediately...\n")
 
     rag_chain = rag_chain
-    summarize_and_store_if_needed = summarize_and_store_if_needed
+    @staticmethod
+    def summarize_and_store_if_needed(message: str):
+        return summarize_and_store_if_needed(message)
     search_and_summarize = staticmethod(search_and_summarize)
     extract_commands = staticmethod(extract_commands)
     run_in_terminal = staticmethod(run_in_shared_terminal)  # ✅ fixed here
@@ -75,6 +79,7 @@ class TessCore:
     smart_find_folder = staticmethod(smart_find_folder)
     extract_folder_name = staticmethod(extract_folder_name)
     resolve_file_path = staticmethod(resolve_file_path)
+    run_with_retry = staticmethod(run_with_retry_and_reflection)
 
 
 Tess = TessCore()

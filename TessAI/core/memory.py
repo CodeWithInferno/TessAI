@@ -24,34 +24,33 @@ User: {question}
 Tess:""")
 rag_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever, chain_type_kwargs={"prompt": rag_prompt})
 
-summary_prompt = PromptTemplate.from_template("""
-Extract any useful personal facts or tasks from this message. Ignore small talk.
+memory_prompt = PromptTemplate.from_template("""
+You are a memory filter for a personal assistant named Tess.
 
 Message:
-{message}
+"{message}"
 
-Summary:""")
-summarizer = summary_prompt | llm
+Decide if this message contains:
+- User name, preferences, tasks, goals
+- Assistant's role, nickname, relationship
+- Any meaningful fact about the user or assistant
 
-filler_phrases = ["no useful", "just started", "nothing important", "small talk"]
+If yes, summarize it in 1 short sentence.
+If no, return only "SKIP".
+when skip dont provide justification just the word SKIP 
 
-@staticmethod
+                                             
+Output:
+""")
+
+summarizer = memory_prompt | llm
+
 
 def summarize_and_store_if_needed(message: str):
-    summary = summarizer.invoke({"message": message}).strip().lower()
+    summary = summarizer.invoke({"message": message}).strip()
 
-    # 🛑 Block summaries that are just filler or empty
-    filler_phrases = [
-        "no personal facts", "no information to extract",
-        "nothing useful", "blank summary", "only a greeting",
-        "just started", "no additional information"
-    ]
+    if summary.upper() == "SKIP" or len(summary.split()) < 5:
+        return  # ❌ Not useful enough to remember
 
-    if not summary or len(summary.split()) < 5:
-        return  # skip short nothing-burgers
-
-    if any(phrase in summary for phrase in filler_phrases):
-        return  # skip generic fluff summaries
-
-    # ✅ Passed checks, save to vectorstore
-    vectorstore.add_texts([summary.capitalize()])
+    # ✅ Passed check — save it
+    vectorstore.add_texts([summary])
