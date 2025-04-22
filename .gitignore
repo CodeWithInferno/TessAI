@@ -49,3 +49,4 @@ node_modules/
 
 # macOS Terminal session info
 /tmp/tess_terminal_session.txt
+TessAI/server/server_data/
