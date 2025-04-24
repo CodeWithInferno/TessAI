@@ -7,7 +7,8 @@ from pathlib import Path
 from uuid import uuid4
 
 # Constants
-SERVER_URL = "https://democracy-barn-encourage-attendance.trycloudflare.com"
+
+SERVER_URL = "https://ranger-george-notices-ru.trycloudflare.com"
 UPLOAD_ENDPOINT = f"{SERVER_URL}/upload-files"
 CHAT_ENDPOINT = f"{SERVER_URL}/chat"
 IS_WINDOWS = platform.system() == "Windows"
