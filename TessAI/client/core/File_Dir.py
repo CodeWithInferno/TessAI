@@ -2,6 +2,7 @@ import os
 import sqlite3
 from pathlib import Path
 
+
 EXCLUDED_DIRS = {
     "node_modules", ".next", ".cache", "__pycache__", ".git", ".venv", "venv", 
     "Library", "Applications", "System", "private", "Volumes", "usr", "bin", "opt", 

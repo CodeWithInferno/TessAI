@@ -49,3 +49,5 @@ node_modules/
 
 # macOS Terminal session info
 /tmp/tess_terminal_session.txt
+
+/HELIXKEY/data/

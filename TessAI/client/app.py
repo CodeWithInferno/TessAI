@@ -1,3 +1,4 @@
+from core.runner import extract_run_command, run_in_terminal
 import os
 import platform
 import sqlite3
@@ -6,7 +7,7 @@ from pathlib import Path
 from uuid import uuid4
 
 # Constants
-SERVER_URL = "https://joke-affiliation-combines-slope.trycloudflare.com"
+SERVER_URL = "https://democracy-barn-encourage-attendance.trycloudflare.com"
 UPLOAD_ENDPOINT = f"{SERVER_URL}/upload-files"
 CHAT_ENDPOINT = f"{SERVER_URL}/chat"
 IS_WINDOWS = platform.system() == "Windows"
@@ -27,7 +28,11 @@ def get_device_id():
 
 DEVICE_ID = get_device_id()
 
+# === TEMPORARILY DISABLED ===
 def upload_file_data():
+    print("📦 Uploading file data to server...")
+    return True
+    """
     if not os.path.exists(DB_FILE):
         print(f"❌ Local file DB not found at {DB_FILE}")
         return False
@@ -59,6 +64,7 @@ def upload_file_data():
     except Exception as e:
         print("❌ Upload failed:", e)
         return False
+    """
 
 def chat_loop():
     print("💬 Enter your message (type 'exit' to quit):")
@@ -71,9 +77,17 @@ def chat_loop():
         try:
             res = requests.post(CHAT_ENDPOINT, json={"query": msg, "device_id": DEVICE_ID})
             if res.status_code == 200:
-                print("Tess:", res.json().get("response"))
+                raw = res.json().get("response", "")
+                cmd = extract_run_command(raw)
+
+                if cmd:
+                    print(f"⚙️ Running command: {cmd}")
+                    run_in_terminal(cmd)
+                else:
+                    print("Tess:", raw.strip())
             else:
                 print("❌ Error:", res.status_code, res.text)
+
         except Exception as e:
             print("❌ Connection failed:", e)
 
