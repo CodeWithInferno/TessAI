@@ -2,7 +2,7 @@ import sqlite3
 import os
 
 # Absolute or relative from project root
-DB_PATH = "server/server_data/rag_memory_ds/chroma.sqlite3"
+DB_PATH = "C:/Users/prpatel/Documents/Programming/TessAI/TessAI/server/server_data/rag_memory_ds/chroma.sqlite3"
 
 # Ensure DB exists
 if not os.path.exists(DB_PATH):

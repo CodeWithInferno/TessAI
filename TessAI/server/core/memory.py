@@ -6,7 +6,7 @@ from langchain_chroma import Chroma
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
 
-CHROMA_DIR = "server_data/rag_memory_ds"
+CHROMA_DIR = "C:/Users/prpatel/Documents/Programming/TessAI/TessAI/server/server_data/rag_memory_ds/chroma.sqlite3"
 os.makedirs(CHROMA_DIR, exist_ok=True)
 
 vectorstore = Chroma(persist_directory=CHROMA_DIR, embedding_function=embedding)
@@ -53,5 +53,8 @@ def summarize_and_store_if_needed(message: str):
 
     if summary.upper() == "SKIP" or len(summary.split()) < 5:
         return  # ❌ Not useful enough to remember
+
+    print(f"💾 Storing to memory: {summary}")
+    vectorstore.add_texts([summary])
 
     vectorstore.add_texts([summary])
