@@ -8,7 +8,7 @@ from uuid import uuid4
 
 # Constants
 
-SERVER_URL = "https://ranger-george-notices-ru.trycloudflare.com"
+SERVER_URL = "https://selections-minority-nightlife-safer.trycloudflare.com"
 UPLOAD_ENDPOINT = f"{SERVER_URL}/upload-files"
 CHAT_ENDPOINT = f"{SERVER_URL}/chat"
 IS_WINDOWS = platform.system() == "Windows"
@@ -101,3 +101,8 @@ if __name__ == "__main__":
     else:
         print("⚠️ Skipping file upload. Starting chat anyway...")
         chat_loop()
+
+
+
+
+

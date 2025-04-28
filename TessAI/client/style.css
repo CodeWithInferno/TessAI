@@ -1,0 +1,41 @@
+Screen {
+    background: black;
+  }
+  
+  #chat {
+    height: 90%;
+    padding: 1 2;
+    border: round #ff0000;
+    background: rgba(0, 0, 0, 0.6);
+    overflow-y: auto;
+  }
+  
+  #input {
+    height: 3;
+    background: black;
+    color: #ff5555;
+    border: round #aa0000;
+  }
+  
+  .message-container {
+    margin: 0;
+    padding: 0;
+    margin-bottom: 0;
+  }
+  
+  .chat-message {
+    margin: 0;
+    padding: 0;
+    margin-bottom: 1;
+  }
+  
+  Static {
+    padding: 0;
+    margin: 0;
+  }
+  
+  Vertical {
+    margin: 0;
+    padding: 0;
+  }
+  

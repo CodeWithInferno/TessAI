@@ -1,0 +1,108 @@
+.
+├── app.py
+├── bin
+│   └── cloudflared.exe
+├── client
+│   ├── app.py
+│   ├── automation
+│   │   ├── command_handler.py
+│   │   ├── execute.py
+│   │   └── terminal.py
+│   ├── core
+│   │   ├── __pycache__
+│   │   │   ├── File_Dir.cpython-310.pyc
+│   │   │   └── runner.cpython-310.pyc
+│   │   ├── File_Dir.py
+│   │   ├── handlers
+│   │   │   ├── __init__.py
+│   │   │   ├── browser.py
+│   │   │   ├── dispatcher.py
+│   │   │   ├── file.py
+│   │   │   └── terminal.py
+│   │   └── runner.py
+│   ├── requirements.txt
+│   └── setup.py
+├── cloudfare.txt
+├── core
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-310.pyc
+│   │   ├── llm.cpython-310.pyc
+│   │   ├── memory.cpython-310.pyc
+│   │   └── search.cpython-310.pyc
+│   ├── automation
+│   │   ├── __pycache__
+│   │   │   ├── command_planner.cpython-310.pyc
+│   │   │   ├── executor.cpython-310.pyc
+│   │   │   ├── explorer.cpython-310.pyc
+│   │   │   ├── file_resolver.cpython-310.pyc
+│   │   │   ├── locator.cpython-310.pyc
+│   │   │   ├── query_parser.cpython-310.pyc
+│   │   │   └── terminal.cpython-310.pyc
+│   │   ├── command_planner.py
+│   │   ├── executor.py
+│   │   ├── explorer.py
+│   │   ├── file_resolver.py
+│   │   ├── filesystem_explorer.py
+│   │   ├── locator.py
+│   │   ├── query_parser.py
+│   │   └── terminal.py
+│   ├── llm.py
+│   ├── memory.py
+│   └── search.py
+├── Dockerfile
+├── File Tree
+├── File_Dir.db
+├── file-tree.txt
+├── Knowledge
+│   └── filescan.py
+├── module
+│   ├── __pycache__
+│   │   ├── auth.cpython-310.pyc
+│   │   └── voice.cpython-310.pyc
+│   ├── auth.py
+│   ├── standby.py
+│   └── voice.py
+├── rag_memory_ds
+│   └── chroma.sqlite3
+├── requirements.txt
+├── scripts
+│   ├── __init__.py
+│   ├── rag_memory_ds
+│   │   └── chroma.sqlite3
+│   └── view_memory.py
+├── server
+│   ├── __init__.py
+│   ├── core
+│   │   ├── __init__.py
+│   │   ├── config.py
+│   │   ├── file_resolver.py
+│   │   ├── filesystem_manager.py
+│   │   ├── llm.py
+│   │   └── memory.py
+│   ├── file_server.py
+│   ├── main.py
+│   └── scripts
+│       ├── view_File.py
+│       └── view_memory.py
+├── tests
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-310.pyc
+│   │   └── test_boot.cpython-310.pyc
+│   ├── integration
+│   │   ├── test_commands.py
+│   │   └── test_search_flow.py
+│   ├── run_all.py
+│   ├── test_boot.py
+│   ├── test_memory.py
+│   └── unit
+│       ├── test_llm.py
+│       ├── test_parser.py
+│       └── test_terminal.py
+└── voice_profiles
+    ├── _temp.wav
+    ├── Pratham.npy
+    └── Pratham.wav
+
+25 directories, 81 files
