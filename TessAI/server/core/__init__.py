@@ -1,8 +1,9 @@
 # server/core/__init__.py
 
 from .llm import llm
-from .memory import rag_chain, summarize_and_store_if_needed
 from .filesystem_manager import FileMemory
+from .memory.semantic_memory import rag_chain
+from .memory.extraction import summarize_and_store_if_needed
 
 
 class TessCore:
