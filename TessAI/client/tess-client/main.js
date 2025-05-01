@@ -76,16 +76,27 @@ app.whenReady().then(async () => {
 // Handle Chat Message to Tess Server
 ipcMain.handle('chat-message', async (event, message) => {
   try {
-    const res = await axios.post('https://selections-minority-nightlife-safer.trycloudflare.com/chat', {
+    const res = await axios.post('https://working-screw-fairy-cake.trycloudflare.com/chat', {
       query: message,
-      device_id: "Darwin_Prathams-MacBook-Air.local_775abecf" // TODO: Replace with dynamic device ID later
-    })
-    return res.data.response
+      device_id: "Darwin_Prathams-MacBook-Air.local_775abecf"
+    });
+
+    console.log("📡 Full server response:", res.data);
+
+    return {
+      intent: res.data.intent || "chat",
+      response: res.data.response || "❌ No response from server."
+    };
+
   } catch (err) {
     console.error("API Error:", err)
-    return "❌ Tess server not reachable."
+    return {
+      intent: "error",
+      response: "❌ Tess server not reachable."
+    };
   }
-})
+});
+
 
 // Handle Tess Actions (Run commands / Open file / Open URL)
 ipcMain.handle('tess-action', async (event, action) => {

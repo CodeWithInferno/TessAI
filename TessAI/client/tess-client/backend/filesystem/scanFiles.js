@@ -1,59 +1,127 @@
-// scanFiles.js
+// filesystem/scanFiles.js
 
-const fs = require('fs');
-const path = require('path');
-const { initDb, DB_FILE } = require('./database');
-const { EXCLUDED_DIRS, USEFUL_EXTENSIONS } = require('./constants');
-const os = require('os');
+const fs = require("fs");
+const path = require("path");
+const os = require("os");
+const { initDb } = require("./database");
 
-function shouldSkipDir(dirPath) {
-  return dirPath.split(path.sep).some(part => EXCLUDED_DIRS.has(part));
-}
+// Directories we always ignore
+const EXCLUDED_DIRS = new Set([
+  "node_modules", ".next", ".cache", "__pycache__", ".git", ".venv", "venv",
+  "Library", "Applications", "System", "private", "Volumes", "usr", "bin", 
+  "opt", "cores", "dev", "sbin", "etc", "tmp", "var", "Network", "Preboot", "Recovery", "home",
+  "$Recycle.Bin", "Program Files", "Program Files (x86)", "Windows", "AppData"
+]);
 
-function scanAndStoreFiles(basePath = os.homedir()) {
-  const db = initDb();
-  const insertFile = db.prepare(`
-    INSERT INTO files (path, name, is_dir, extension, size)
-    VALUES (?, ?, ?, ?, ?)
-  `);
+const APPLICATIONS_FOLDER = "/Applications";
 
-  function walkDirectory(dir) {
-    if (shouldSkipDir(dir)) return;
+// ===== Recursive Directory Scanner =====
+function scanDirectory(dirPath, db) {
+  if (!fs.existsSync(dirPath)) return;
 
-    let entries;
-    try {
-      entries = fs.readdirSync(dir, { withFileTypes: true });
-    } catch (err) {
-      return;
+  const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(dirPath, entry.name);
+
+    if (EXCLUDED_DIRS.has(entry.name)) {
+      continue; // Skip garbage folders
     }
 
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-
+    try {
       if (entry.isDirectory()) {
-        walkDirectory(fullPath);
-        try {
-          insertFile.run(fullPath, entry.name, true, "", 0);
-        } catch (err) {
-          continue;
-        }
+        db.prepare(`
+          INSERT INTO files (path, name, is_dir, extension, size)
+          VALUES (?, ?, ?, ?, ?)
+        `).run(
+          String(fullPath),
+          String(entry.name),
+          true,
+          "",
+          0 // Folders have no size
+        );
+
+        // Recursively scan subdirectories
+        scanDirectory(fullPath, db);
+
       } else if (entry.isFile()) {
         const ext = path.extname(entry.name).toLowerCase();
-        if (USEFUL_EXTENSIONS.has(ext)) {
-          try {
-            const stat = fs.statSync(fullPath);
-            insertFile.run(fullPath, entry.name, false, ext, stat.size);
-          } catch (err) {
-            continue;
-          }
-        }
+        const stats = fs.statSync(fullPath);
+        const size = (typeof stats.size === "number") ? stats.size : 0;
+
+        db.prepare(`
+          INSERT INTO files (path, name, is_dir, extension, size)
+          VALUES (?, ?, ?, ?, ?)
+        `).run(
+          String(fullPath),
+          String(entry.name),
+          false,
+          String(ext),
+          size
+        );
       }
+    } catch (error) {
+      console.warn(`⚠️ Skipped ${fullPath}: ${error.message}`);
+    }
+  }
+}
+
+// ===== Specific Applications Folder Scanner =====
+function scanApplicationsFolder(db) {
+  if (!fs.existsSync(APPLICATIONS_FOLDER)) return;
+
+  const apps = fs.readdirSync(APPLICATIONS_FOLDER);
+
+  for (const app of apps) {
+    const fullPath = path.join(APPLICATIONS_FOLDER, app);
+
+    if (!app.endsWith(".app")) continue; // Only scan .app bundles
+
+    try {
+      const stats = fs.statSync(fullPath);
+      const size = (typeof stats.size === "number") ? stats.size : 0;
+
+      db.prepare(`
+        INSERT INTO files (path, name, is_dir, extension, size)
+        VALUES (?, ?, ?, ?, ?)
+      `).run(
+        String(fullPath),
+        String(app),
+        true,
+        ".app",
+        size
+      );
+
+    } catch (error) {
+      console.warn(`⚠️ Skipped application ${fullPath}: ${error.message}`);
     }
   }
 
-  walkDirectory(basePath);
+  console.log(`✅ Scanned and stored apps from /Applications`);
+}
 
-  console.log(`✅ Done. Indexed files stored in ${DB_FILE}`);
+// ===== Main Function to Scan Everything =====
+async function scanAndStoreFiles() {
+  const db = initDb();
+
+  console.log("🔍 Scanning user directories...");
+
+  const userDirs = [
+    path.join(os.homedir(), "Desktop"),
+    path.join(os.homedir(), "Documents"),
+    path.join(os.homedir(), "Downloads"),
+    os.homedir()
+  ];
+
+  for (const dir of userDirs) {
+    scanDirectory(dir, db);
+  }
+
+  console.log("🔍 Scanning Applications folder...");
+  scanApplicationsFolder(db);
+
+  db.close();
+  console.log("✅ Scanning complete!");
 }
 
 module.exports = {

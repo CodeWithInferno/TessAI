@@ -126,33 +126,34 @@ function addMessage(content, isUser = false) {
 
 // Send message function
 async function sendMessage() {
-  const input = document.getElementById("userInput")
-  const userMessage = input.value.trim()
+  const input = document.getElementById("userInput");
+  const userMessage = input.value.trim();
 
-  if (!userMessage) return
+  if (!userMessage) return;
 
-  addMessage(userMessage, true)
-  input.value = ""
+  addMessage(userMessage, true);
+  input.value = "";
 
   try {
-    const serverResponse = await window.electronAPI.sendChat(userMessage)
-    console.log("📩 Server Response:", serverResponse)
+    const { response, intent } = await window.electronAPI.sendChat(userMessage);
+    console.log("📩 Server Response:", response, "| Intent:", intent);
 
-    // Try to parse special actions
-    const extractedAction = extractActionFromResponse(serverResponse);
+    // Try to parse an action from the response
+    const extractedAction = extractActionFromResponse(response);
 
     if (extractedAction) {
-      console.log("🛠 Detected Action:", extractedAction)
+      console.log("🛠 Detected Action:", extractedAction);
       await window.electronAPI.sendAction(extractedAction);
     } else {
-      addMessage(serverResponse)
+      addMessage(response);
     }
 
   } catch (error) {
-    console.error("Error sending message:", error)
-    addMessage("❌ Server error.")
+    console.error("❌ Error sending message:", error);
+    addMessage("❌ Server error.");
   }
 }
+
 
 
 function extractActionFromResponse(text) {
