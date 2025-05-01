@@ -60,6 +60,7 @@ def strip_think_blocks(text: str) -> str:
 def save_to_semantic_memory(text: str):
     """Save a clean text into ChromaDB."""
     vectorstore.add_texts([text])
+    # vectorstore.persist()
     print(f"💾 [Semantic Memory Saved] {text}")
 
 def summarize_and_store_if_needed(message: str):

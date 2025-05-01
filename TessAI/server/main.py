@@ -20,6 +20,10 @@ from core.memory.extraction import summarize_and_store_if_needed
 from langchain.prompts import PromptTemplate
 from core.memory.structured_memory import create_structured_table
 from core.memory.recall import generate_memory_summary
+from agents.scheduler_agent.agent import handle_schedule_input
+from agents.scheduler_agent.logic import get_agenda_for_day
+
+
 
 
 
@@ -97,15 +101,35 @@ async def upload_files(files: List[FileEntry]):
 
 # ==== KEYWORD CLASSIFIER ====
 def classify_query_type(query: str) -> str:
-    query_lower = query.lower()
+    q = query.lower()
+
+    # Explicit calendar checks (must be BEFORE "schedule")
+    calendar_check_keywords = [
+        "what is my schedule", "do i have", "what's my day", "any meetings",
+        "am i free", "is there anything", "agenda", "calendar", "what is my calendar", "free tomorrow", "busy"
+    ]
+    if any(kw in q for kw in calendar_check_keywords):
+        return "calendar_check"
+
+    # Shell/terminal/file commands
     command_keywords = [
         "run", "open", "launch", "start", "execute", "kill",
         "find", "search", "shutdown", "restart", "install",
         "delete", "remove", "close", "list", "show"
     ]
-    if any(kw in query_lower for kw in command_keywords):
+    if any(kw in q for kw in command_keywords):
         return "command"
+
+    # Schedule/plan/add events
+    schedule_keywords = [
+        "remind", "schedule", "set", "make", "create", "plan", "book a meeting", "add"
+    ]
+    if any(kw in q for kw in schedule_keywords):
+        return "schedule"
+
     return "chat"
+
+
 
 
 # ==== PROMPTS ====
@@ -171,7 +195,20 @@ async def chat(req: Query):
                     "response": {"error": "no_file_found"},
                     "intent": intent
                 }
+        elif intent == "schedule":
+            response = handle_schedule_input(req.query)
+            return {"response": response, "intent": "schedule"}
+        elif intent == "calendar_check":
+            try:
+                print(f"[🗓️ Calendar] Getting agenda for 'tomorrow'")
+                response = get_agenda_for_day("tomorrow")
+                return {"response": response, "intent": "calendar_check"}
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                return {"response": f"❌ Failed to get agenda: {str(e)}", "intent": "calendar_check"}
 
+        
         elif intent == "chat":
             memory_summary = generate_memory_summary()
             memory_boost = f"Here’s what I know about you:\n{memory_summary}\n\n" if memory_summary else ""
