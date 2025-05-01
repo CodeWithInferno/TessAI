@@ -1,19 +1,21 @@
-# server/core/memory.py
-
 import os
+import re
 from core.llm import llm, embedding
 from langchain_chroma import Chroma
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
 
-CHROMA_DIR = "C:/Users/prpatel/Documents/Programming/TessAI/TessAI/server/server_data/rag_memory_ds/chroma.sqlite3"
+# Vector DB path
+CHROMA_DIR = "server_data/rag_memory_ds"
+CHROMA_PATH = os.path.join(CHROMA_DIR, "chroma.sqlite3")
 os.makedirs(CHROMA_DIR, exist_ok=True)
 
+# Initialize Chroma vector store
 vectorstore = Chroma(persist_directory=CHROMA_DIR, embedding_function=embedding)
 retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
-rag_prompt = PromptTemplate.from_template("""
-You are Tess, a helpful terminal-based personal assistant.
+# RAG Prompt
+rag_prompt = PromptTemplate.from_template("""You are Tess, a helpful terminal-based personal assistant.
 
 Use the memory below to answer the user's question.
 
@@ -29,32 +31,64 @@ rag_chain = RetrievalQA.from_chain_type(
     chain_type_kwargs={"prompt": rag_prompt}
 )
 
-# MEMORY SUMMARIZER
+# Memory summarizer prompt
+# new schema prompt
 memory_prompt = PromptTemplate.from_template("""
-You are a memory filter for a personal assistant named Tess.
+You are a Memory Assistant.  Extract every enduring fact from the user’s message and output as a JSON array of objects.  
+Each object must have:
+- “category”: one of [“name”, “project”, “preference”, “relationship”, “achievement”, “alias”, “other”]
+- “detail”: a short human-readable sentence stating the fact.
 
-Message:
-"{message}"
+Output ONLY the JSON array.  
+If there are no storable facts, output exactly: []
+  
+Input:
+\"\"\"{message}\"\"\"
 
-Decide if this message contains:
-- User name, preferences, tasks, goals
-- Assistant's role, nickname, relationship
-- Any meaningful fact about the user or assistant
-
-If yes, summarize it in 1 short sentence.
-If no, return only "SKIP".
 Output:
 """)
 
+
+
 summarizer = memory_prompt | llm
 
+
+def strip_think_blocks(text: str) -> str:
+    """Remove all <think>...</think> blocks (non-greedy)."""
+    return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+
+
 def summarize_and_store_if_needed(message: str):
-    summary = summarizer.invoke({"message": message}).strip()
+    # Step 1: Remove <think> from original message
+    clean_input = strip_think_blocks(message)
 
+    # Step 2: Summarize cleaned message
+    raw_summary = summarizer.invoke({"message": clean_input}).strip()
+
+    # Step 3: Remove <think> from summary too
+    summary = strip_think_blocks(raw_summary).strip()
+
+    # Step 4: Skip bad summaries
     if summary.upper() == "SKIP" or len(summary.split()) < 5:
-        return  # ❌ Not useful enough to remember
+        print("⏭️ SKIP detected, not storing.")
+        return
 
+    # Step 5: Heuristically reject junk responses
+    skip_keywords = [
+        "you are asking", 
+        "the user is asking", 
+        "your name is", 
+        "you said", 
+        "the assistant is", 
+        "Tess is", 
+        "message contains information about the assistant", 
+        "your personal assistant"
+    ]
+    if any(kw.lower() in summary.lower() for kw in skip_keywords):
+        print("🧹 Filtered: Low-value or generic memory detected.")
+        return
+
+    # Step 6: Store
     print(f"💾 Storing to memory: {summary}")
     vectorstore.add_texts([summary])
 
-    vectorstore.add_texts([summary])

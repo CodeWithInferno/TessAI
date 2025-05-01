@@ -5,6 +5,9 @@ __pycache__/
 *.pyd
 *.pyo
 
+# Ignore local DBs
+server/server_data/**/chroma.sqlite3
+
 # Virtual environments
 .venv/
 venv/
