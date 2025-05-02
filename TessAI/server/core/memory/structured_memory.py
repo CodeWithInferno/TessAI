@@ -2,6 +2,8 @@ import sqlite3
 import os
 
 DB_PATH = "server_data/file_memory.db"
+os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+
 
 def create_structured_table():
     conn = sqlite3.connect(DB_PATH)
@@ -31,3 +33,5 @@ def get_all_facts():
     facts = c.fetchall()
     conn.close()
     return facts
+
+create_structured_table()
